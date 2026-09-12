@@ -1,0 +1,52 @@
+# Dependencies
+node_modules/
+worker/node_modules/
+package-lock.json
+yarn.lock
+
+# Expo / Metro / native
+.expo/
+dist/
+web-build/
+expo-env.d.ts
+/ios
+/android
+.kotlin/
+.eas/
+.metro-health-check*
+*.orig.*
+
+# Secrets and local env
+.env
+.env.*
+!.env.example
+.dev.vars
+*.pem
+*.p12
+*.key
+credentials.json
+
+# Logs and caches
+*.log
+npm-debug.*
+yarn-debug.*
+yarn-error.*
+*.tsbuildinfo
+coverage/
+.turbo/
+.cache/
+.wrangler/
+worker/.wrangler/
+
+# Editor and OS
+.cursor/
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+
+# Agent / local scratch
+tmp/
+*.local
