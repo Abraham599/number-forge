@@ -5,6 +5,7 @@ import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import { KidButton } from "@/components/KidButton";
 import { LessonChrome } from "@/components/LessonChrome";
 import { PaperScreen } from "@/components/PaperScreen";
+import { PlayStage } from "@/components/PlayStage";
 import { TradeCoach } from "@/components/TradeCoach";
 import { COACH_IDLE_MS, visibleCoach, weaveCoach } from "@/game/forge/coach";
 import { generateWeavePuzzle } from "@/curriculum/generate";
@@ -158,14 +159,14 @@ export default function WeaveScreen() {
 
   if (!puzzle) {
     return (
-      <PaperScreen>
+      <PaperScreen includeBottom>
         <Text style={styles.missing}>This weave is not ready yet.</Text>
       </PaperScreen>
     );
   }
 
   return (
-    <PaperScreen style={styles.wrap}>
+    <PaperScreen style={styles.wrap} includeBottom>
       <LessonChrome
         progress={1 - secondsLeft / puzzle.seconds}
         prompt={`Draw a path to ${target}.`}
@@ -174,51 +175,61 @@ export default function WeaveScreen() {
         unlocked={smith.unlocked}
         tempered={smith.tempered}
       />
-      <View style={styles.meta}>
-        <Text style={styles.pill}>{secondsLeft}s</Text>
-        <Text style={styles.pill}>{wins > 0 ? `In a row · ${wins}` : "Draw a path"}</Text>
-      </View>
-      <Text style={[styles.live, hot ? styles.liveHot : null]}>{sum}</Text>
-      <View style={styles.meter}>
-        <View style={[styles.meterFill, { width: `${Math.round(fill * 100)}%` }]} />
-      </View>
-      <Text style={styles.eq}>{formatPathEquation(grid, path)}</Text>
-      <TradeCoach tip={coach} onAskHint={() => setAsked(true)} />
-      <GestureDetector gesture={gesture}>
-        <View
-          style={styles.grid}
-          onLayout={(event) => {
-            const next = Math.floor((event.nativeEvent.layout.width - 24) / WEAVE_SIZE);
-            setCellSize(Math.max(56, next));
-          }}
-        >
-          {grid.map((value, index) => {
-            const on = path.includes(index);
-            return (
-              <Pressable
-                key={index}
-                onPress={() => addIndex(index)}
-                accessibilityRole="button"
-                accessibilityLabel={`${value}${on ? ", on path" : ""}`}
-                style={[
-                  styles.cell,
-                  { width: cellSize - 8, height: cellSize - 8 },
-                  on ? styles.cellOn : null,
-                ]}
+      <PlayStage
+        stage={
+          <View style={styles.stage}>
+            <View style={styles.meta}>
+              <Text style={styles.pill}>{secondsLeft}s</Text>
+              <Text style={styles.pill}>{wins > 0 ? `In a row · ${wins}` : "Draw a path"}</Text>
+            </View>
+            <Text style={[styles.live, hot ? styles.liveHot : null]}>{sum}</Text>
+            <View style={styles.meter}>
+              <View style={[styles.meterFill, { width: `${Math.round(fill * 100)}%` }]} />
+            </View>
+            <Text style={styles.eq}>{formatPathEquation(grid, path)}</Text>
+            <GestureDetector gesture={gesture}>
+              <View
+                style={styles.grid}
+                onLayout={(event) => {
+                  const next = Math.floor((event.nativeEvent.layout.width - 24) / WEAVE_SIZE);
+                  setCellSize(Math.max(56, next));
+                }}
               >
-                <Text style={[styles.cellText, on ? styles.cellTextOn : null]}>{value}</Text>
-              </Pressable>
-            );
-          })}
-        </View>
-      </GestureDetector>
-      <KidButton
-        label="Start over"
-        tone="ghost"
-        onPress={() => {
-          setPath([]);
-          setActivityTick((tick) => tick + 1);
-        }}
+                {grid.map((value, index) => {
+                  const on = path.includes(index);
+                  return (
+                    <Pressable
+                      key={index}
+                      onPress={() => addIndex(index)}
+                      accessibilityRole="button"
+                      accessibilityLabel={`${value}${on ? ", on path" : ""}`}
+                      style={[
+                        styles.cell,
+                        { width: cellSize - 8, height: cellSize - 8 },
+                        on ? styles.cellOn : null,
+                      ]}
+                    >
+                      <Text style={[styles.cellText, on ? styles.cellTextOn : null]}>{value}</Text>
+                    </Pressable>
+                  );
+                })}
+              </View>
+            </GestureDetector>
+          </View>
+        }
+        dock={
+          <>
+            <TradeCoach tip={coach} onAskHint={() => setAsked(true)} />
+            <KidButton
+              label="Start over"
+              tone="ghost"
+              onPress={() => {
+                setPath([]);
+                setActivityTick((tick) => tick + 1);
+              }}
+            />
+          </>
+        }
       />
     </PaperScreen>
   );
@@ -233,8 +244,14 @@ function hitIndex(x: number, y: number, cellSize: number): number | null {
 
 const styles = StyleSheet.create({
   wrap: {
+    flex: 1,
     paddingTop: spacing.sm,
     paddingBottom: spacing.md,
+    gap: spacing.sm,
+  },
+  stage: {
+    flex: 1,
+    minHeight: 0,
     gap: spacing.sm,
   },
   missing: {

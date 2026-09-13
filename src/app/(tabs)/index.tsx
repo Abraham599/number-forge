@@ -2,6 +2,7 @@ import { useFocusEffect, useRouter } from "expo-router";
 import React, { useCallback, useMemo, useState } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { DigitSmith } from "@/components/DigitSmith";
+import { DuoPane } from "@/components/DuoPane";
 import { KidButton } from "@/components/KidButton";
 import { PaperScreen } from "@/components/PaperScreen";
 import { StreakBar } from "@/components/StreakBar";
@@ -12,6 +13,7 @@ import { bestStarsByLesson, isSmithTempered, masteredLessonIds, weekPlayDates } 
 import { isNodeLocked, playIdForNode } from "@/progress/path-progress";
 import { useAppState } from "@/progress/store";
 import { partForNode, smithSnapshot } from "@/smith/parts";
+import { useAppLayout } from "@/theme/layout";
 import { colors, radius, spacing, squircle, type } from "@/theme/tokens";
 
 export default function PathScreen() {
@@ -36,54 +38,73 @@ export default function PathScreen() {
   const next = snap.current;
   const pathDone = next?.kind === "chest";
   const nextPart = next ? partForNode(next) : undefined;
+  const { split } = useAppLayout();
+  const playButton =
+    pathDone ? (
+      <KidButton label="Keep Smith sharp" onPress={() => openForgeLesson(router, "forge-daily")} />
+    ) : next ? (
+      <KidButton label={`Play ${playCopy(next)}`} onPress={() => openWorldNode(router, next)} />
+    ) : null;
 
   return (
     <PaperScreen style={styles.wrap}>
-      <View style={styles.banner}>
-        <Text style={styles.kicker}>Tens Town</Text>
-        <Text style={styles.title}>{bannerTitle(next, nextPart, pathDone)}</Text>
-        <Text style={styles.sub}>{bannerSub(next, nextPart, pathDone)}</Text>
-      </View>
-      <StreakBar dateKeys={dates} />
-      {pathDone ? (
-        <KidButton label="Keep Smith sharp" onPress={() => openForgeLesson(router, "forge-daily")} />
-      ) : next ? (
-        <KidButton label={`Play ${playCopy(next)}`} onPress={() => openWorldNode(router, next)} />
-      ) : null}
-      <ScrollView contentContainerStyle={styles.path} showsVerticalScrollIndicator={false}>
-        {snap.nodes.map((node, index) => {
-          const locked = isNodeLocked(index, snap.nodes.indexOf(next ?? snap.nodes[0]!));
-          const here = next ? playIdForNode(node) === playIdForNode(next) : false;
-          const done = mastered.has(playIdForNode(node)) || (node.kind === "chest" && snap.unlocked.includes("cape"));
-          const part = partForNode(node);
-          return (
-            <View key={node.id} style={styles.step}>
-              {index > 0 ? <View style={[styles.rail, done || here ? styles.railOn : null]} /> : null}
-              <View style={[styles.row, index % 2 === 0 ? styles.left : styles.right]}>
-                {here ? (
-                  <DigitSmith
-                    size={92}
-                    lively={false}
-                    unlocked={snap.unlocked}
-                    highlight={part?.id}
-                    tempered={snap.tempered}
-                  />
-                ) : (
-                  <View style={styles.spacer} />
-                )}
-                <PathNode
-                  node={node}
-                  locked={locked}
-                  current={here}
-                  done={done}
-                  stars={starsByLesson.get(playIdForNode(node)) ?? 0}
-                  onPress={() => openWorldNode(router, node)}
-                />
-              </View>
+      <DuoPane
+        primary={
+          <ScrollView
+            style={styles.leadScroll}
+            contentContainerStyle={styles.lead}
+            showsVerticalScrollIndicator={false}
+          >
+            <View style={[styles.banner, split ? styles.bannerSplit : null]}>
+              <Text style={styles.kicker}>Tens Town</Text>
+              <Text style={styles.title}>{bannerTitle(next, nextPart, pathDone)}</Text>
+              <Text style={styles.sub}>{bannerSub(next, nextPart, pathDone)}</Text>
             </View>
-          );
-        })}
-      </ScrollView>
+            {split ? playButton : <StreakBar dateKeys={dates} />}
+            {split ? <StreakBar dateKeys={dates} /> : playButton}
+          </ScrollView>
+        }
+        secondary={
+          <ScrollView
+            style={styles.pathScroll}
+            contentContainerStyle={styles.path}
+            showsVerticalScrollIndicator={false}
+          >
+            {snap.nodes.map((node, index) => {
+              const locked = isNodeLocked(index, snap.nodes.indexOf(next ?? snap.nodes[0]!));
+              const here = next ? playIdForNode(node) === playIdForNode(next) : false;
+              const done = mastered.has(playIdForNode(node)) || (node.kind === "chest" && snap.unlocked.includes("cape"));
+              const part = partForNode(node);
+              return (
+                <View key={node.id} style={styles.step}>
+                  {index > 0 ? <View style={[styles.rail, done || here ? styles.railOn : null]} /> : null}
+                  <View style={[styles.row, index % 2 === 0 ? styles.left : styles.right]}>
+                    {here ? (
+                      <DigitSmith
+                        size={92}
+                        lively={false}
+                        unlocked={snap.unlocked}
+                        highlight={part?.id}
+                        tempered={snap.tempered}
+                      />
+                    ) : (
+                      <View style={styles.spacer} />
+                    )}
+                    <PathNode
+                      node={node}
+                      locked={locked}
+                      current={here}
+                      done={done}
+                      stars={starsByLesson.get(playIdForNode(node)) ?? 0}
+                      onPress={() => openWorldNode(router, node)}
+                    />
+                  </View>
+                </View>
+              );
+            })}
+          </ScrollView>
+        }
+      />
     </PaperScreen>
   );
 }
@@ -216,13 +237,25 @@ function glyph(node: WorldNode): string {
 const styles = StyleSheet.create({
   wrap: {
     paddingTop: spacing.sm,
+  },
+  leadScroll: {
+    flex: 1,
+  },
+  lead: {
     gap: spacing.md,
+    paddingBottom: spacing.md,
+  },
+  pathScroll: {
+    flex: 1,
   },
   banner: {
     backgroundColor: colors.teal,
     borderRadius: radius.lg,
     padding: spacing.lg,
     ...squircle,
+  },
+  bannerSplit: {
+    padding: spacing.md,
   },
   kicker: {
     ...type.footnote,

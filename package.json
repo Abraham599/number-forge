@@ -10,7 +10,7 @@
     "web": "expo start --web",
     "lint": "expo lint",
     "typecheck": "tsc --noEmit",
-    "verify:game": "npx tsx src/game/forge/engine.test.ts && npx tsx src/game/forge/coach.test.ts && npx tsx src/game/heap/engine.test.ts && npx tsx src/game/bunch/engine.test.ts && npx tsx src/game/slice/engine.test.ts && npx tsx src/game/weave/engine.test.ts && npx tsx src/progress/dates.test.ts && npx tsx src/progress/mastery.test.ts && npx tsx src/progress/path-progress.test.ts && npx tsx src/smith/parts.test.ts && npx tsx src/curriculum/generate.test.ts",
+    "verify:game": "npx tsx src/game/forge/engine.test.ts && npx tsx src/game/forge/coach.test.ts && npx tsx src/game/heap/engine.test.ts && npx tsx src/game/bunch/engine.test.ts && npx tsx src/game/slice/engine.test.ts && npx tsx src/game/weave/engine.test.ts && npx tsx src/progress/dates.test.ts && npx tsx src/progress/mastery.test.ts && npx tsx src/progress/path-progress.test.ts && npx tsx src/smith/parts.test.ts && npx tsx src/curriculum/generate.test.ts && npx tsx src/theme/layout.test.ts",
     "worker:dev": "pnpm --dir worker dev",
     "worker:types": "pnpm --dir worker types"
   },

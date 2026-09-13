@@ -109,6 +109,7 @@ const styles = StyleSheet.create({
   wrap: {
     flexGrow: 1,
     flexShrink: 0,
+    minHeight: 108,
     borderRadius: radius.md,
     padding: spacing.sm,
     backgroundColor: colors.paper,

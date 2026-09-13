@@ -1,6 +1,7 @@
 import { useFocusEffect, useRouter } from "expo-router";
 import React, { useCallback, useMemo, useState } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { DuoPane } from "@/components/DuoPane";
 import { KidButton } from "@/components/KidButton";
 import { PaperScreen } from "@/components/PaperScreen";
 import { Surface } from "@/components/Surface";
@@ -11,6 +12,7 @@ import { isSmithTempered, listSkills, masteredLessonIds, repairCount, type Skill
 import { isNodeLocked, playIdForNode } from "@/progress/path-progress";
 import { useAppState } from "@/progress/store";
 import { nodeForSkill, partForSkill, smithSnapshot } from "@/smith/parts";
+import { useAppLayout } from "@/theme/layout";
 import { colors, radius, spacing, squircle, type } from "@/theme/tokens";
 
 const ORDER: SkillId[] = [
@@ -47,41 +49,62 @@ export default function GardenScreen() {
     [gradeBand, tick],
   );
   const misses = useMemo(() => repairCount(), [tick]);
+  const { columns } = useAppLayout();
 
   return (
     <PaperScreen style={styles.wrap}>
-      <Text style={styles.title}>Your stars</Text>
-      <Text style={styles.sub}>3 stars forge that part on Smith.</Text>
-      {misses > 0 ? (
-        <View style={styles.repair}>
-          <Text style={styles.repairKicker}>Repair pile</Text>
-          <Text style={styles.repairTitle}>
-            {misses === 1 ? "1 miss to repair" : `${misses} misses to repair`}
-          </Text>
-          <KidButton label={`Repair ${misses} ${misses === 1 ? "miss" : "misses"}`} onPress={() => openForgeLesson(router, "forge-repair")} />
-        </View>
-      ) : null}
-      <ScrollView contentContainerStyle={styles.list} showsVerticalScrollIndicator={false}>
-        {ORDER.filter((skillId) => nodeForSkill(snap.nodes, skillId)).map((skillId) => {
-          const node = nodeForSkill(snap.nodes, skillId);
-          const current = snap.current && node ? playIdForNode(node) === playIdForNode(snap.current) : false;
-          const index = node ? snap.nodes.findIndex((item) => item.id === node.id) : -1;
-          const locked = index >= 0 && snap.current ? isNodeLocked(index, snap.nodes.indexOf(snap.current)) : true;
-          return (
-            <SkillCard
-              key={skillId}
-              skillId={skillId}
-              row={byId.get(skillId)}
-              locked={locked}
-              current={current}
-              onPress={() => {
-                if (!node || locked) return;
-                openWorldNode(router, node);
-              }}
-            />
-          );
-        })}
-      </ScrollView>
+      <DuoPane
+        primary={
+          <ScrollView
+            style={styles.leadScroll}
+            contentContainerStyle={styles.lead}
+            showsVerticalScrollIndicator={false}
+          >
+            <Text style={styles.title}>Your stars</Text>
+            <Text style={styles.sub}>3 stars forge that part on Smith.</Text>
+            {misses > 0 ? (
+              <View style={styles.repair}>
+                <Text style={styles.repairKicker}>Repair pile</Text>
+                <Text style={styles.repairTitle}>
+                  {misses === 1 ? "1 miss to repair" : `${misses} misses to repair`}
+                </Text>
+                <KidButton
+                  label={`Repair ${misses} ${misses === 1 ? "miss" : "misses"}`}
+                  onPress={() => openForgeLesson(router, "forge-repair")}
+                />
+              </View>
+            ) : null}
+          </ScrollView>
+        }
+        secondary={
+          <ScrollView
+            style={styles.listScroll}
+            contentContainerStyle={[styles.list, columns ? styles.listSplit : null]}
+            showsVerticalScrollIndicator={false}
+          >
+            {ORDER.filter((skillId) => nodeForSkill(snap.nodes, skillId)).map((skillId) => {
+              const node = nodeForSkill(snap.nodes, skillId);
+              const current = snap.current && node ? playIdForNode(node) === playIdForNode(snap.current) : false;
+              const index = node ? snap.nodes.findIndex((item) => item.id === node.id) : -1;
+              const locked = index >= 0 && snap.current ? isNodeLocked(index, snap.nodes.indexOf(snap.current)) : true;
+              return (
+                <View key={skillId} style={columns ? styles.cardCell : null}>
+                  <SkillCard
+                    skillId={skillId}
+                    row={byId.get(skillId)}
+                    locked={locked}
+                    current={current}
+                    onPress={() => {
+                      if (!node || locked) return;
+                      openWorldNode(router, node);
+                    }}
+                  />
+                </View>
+              );
+            })}
+          </ScrollView>
+        }
+      />
     </PaperScreen>
   );
 }
@@ -163,6 +186,25 @@ function barWidth(status: SkillStatus): number {
 const styles = StyleSheet.create({
   wrap: {
     paddingTop: spacing.lg,
+  },
+  leadScroll: {
+    flex: 1,
+  },
+  lead: {
+    gap: spacing.xs,
+    paddingBottom: spacing.md,
+  },
+  listScroll: {
+    flex: 1,
+  },
+  listSplit: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+  },
+  cardCell: {
+    flexBasis: "47%",
+    flexGrow: 1,
+    maxWidth: "50%",
   },
   title: {
     ...type.title,

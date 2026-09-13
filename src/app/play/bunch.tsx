@@ -6,6 +6,7 @@ import { FeedbackSheet } from "@/components/FeedbackSheet";
 import { KidButton } from "@/components/KidButton";
 import { LessonChrome } from "@/components/LessonChrome";
 import { PaperScreen } from "@/components/PaperScreen";
+import { PlayStage } from "@/components/PlayStage";
 import { TradeCoach } from "@/components/TradeCoach";
 import { generateBunchLesson } from "@/curriculum/generate";
 import { bunchLessonById } from "@/curriculum/tens-town";
@@ -123,14 +124,14 @@ export default function BunchScreen() {
 
   if (!lesson || !beat) {
     return (
-      <PaperScreen>
+      <PaperScreen includeBottom>
         <Text style={styles.missing}>That lesson is not in Tens Town yet.</Text>
       </PaperScreen>
     );
   }
 
   return (
-    <PaperScreen style={styles.wrap}>
+    <PaperScreen style={styles.wrap} includeBottom>
       <LessonChrome
         progress={(beatIndex + 0.15) / lesson.beats.length}
         prompt={beat.prompt}
@@ -139,6 +140,8 @@ export default function BunchScreen() {
         unlocked={smith.unlocked}
         tempered={smith.tempered}
       />
+      <PlayStage
+        stage={
       <View style={styles.mat}>
         <Text style={[styles.live, stamped === need ? styles.liveHot : null]}>{total}</Text>
         <Text style={styles.eq}>{bunchFormula(stamped, size)}</Text>
@@ -162,6 +165,9 @@ export default function BunchScreen() {
           ))}
         </View>
       </View>
+        }
+        dock={
+          <>
       <TradeCoach tip={coach} onAskHint={() => setAsked(true)} />
       <KidButton
         label="+ bunch"
@@ -174,6 +180,9 @@ export default function BunchScreen() {
         }}
       />
       <KidButton label="Check" tone={stamped === 0 ? "disabled" : "primary"} onPress={onCheck} />
+          </>
+        }
+      />
       {sheet === "correct" ? (
         <FeedbackSheet
           variant="correct"
@@ -211,6 +220,7 @@ export default function BunchScreen() {
 
 const styles = StyleSheet.create({
   wrap: {
+    flex: 1,
     paddingTop: spacing.sm,
     paddingBottom: spacing.md,
     gap: spacing.sm,

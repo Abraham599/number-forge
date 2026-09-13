@@ -6,6 +6,7 @@ import { FeedbackSheet } from "@/components/FeedbackSheet";
 import { KidButton } from "@/components/KidButton";
 import { LessonChrome } from "@/components/LessonChrome";
 import { PaperScreen } from "@/components/PaperScreen";
+import { PlayStage } from "@/components/PlayStage";
 import { TradeCoach } from "@/components/TradeCoach";
 import { generateShareLesson } from "@/curriculum/generate";
 import { shareLessonById } from "@/curriculum/tens-town";
@@ -18,6 +19,7 @@ import { usePlayMusic } from "@/lib/use-play-music";
 import { isSmithTempered, listSkills, masteredLessonIds } from "@/progress/db";
 import { useAppState } from "@/progress/store";
 import { partForPlayId, smithSnapshot } from "@/smith/parts";
+import { useAppLayout } from "@/theme/layout";
 import { colors, radius, shadow, spacing, squircle, type } from "@/theme/tokens";
 
 type Sheet = "correct" | "incorrect" | "quit" | null;
@@ -136,14 +138,16 @@ export default function ShareScreen() {
 
   if (!lesson || !beat) {
     return (
-      <PaperScreen>
+      <PaperScreen includeBottom>
         <Text style={styles.missing}>That lesson is not in Tens Town yet.</Text>
       </PaperScreen>
     );
   }
 
+  const { split, foldGutter } = useAppLayout();
+
   return (
-    <PaperScreen style={styles.wrap}>
+    <PaperScreen style={styles.wrap} includeBottom>
       <LessonChrome
         progress={(beatIndex + 0.15) / lesson.beats.length}
         prompt={beat.prompt}
@@ -152,9 +156,11 @@ export default function ShareScreen() {
         unlocked={smith.unlocked}
         tempered={smith.tempered}
       />
+      <PlayStage
+        stage={
       <View style={styles.mat}>
         <Text style={styles.left}>{left === 0 ? "All shared" : `${left} left`}</Text>
-        <View style={styles.bowls}>
+        <View style={[styles.bowls, { gap: split ? foldGutter : spacing.sm }]}>
           {counts.map((count, index) => (
             <View key={index} style={styles.bowl}>
               <Pressable
@@ -183,8 +189,14 @@ export default function ShareScreen() {
           ))}
         </View>
       </View>
+        }
+        dock={
+          <>
       <TradeCoach tip={coach} onAskHint={() => setAsked(true)} />
       <KidButton label="Check" tone={left > 0 ? "disabled" : "primary"} onPress={onCheck} />
+          </>
+        }
+      />
       {sheet === "correct" ? (
         <FeedbackSheet
           variant="correct"
@@ -218,6 +230,7 @@ export default function ShareScreen() {
 
 const styles = StyleSheet.create({
   wrap: {
+    flex: 1,
     paddingTop: spacing.sm,
     paddingBottom: spacing.md,
     gap: spacing.sm,

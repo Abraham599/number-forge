@@ -3,7 +3,7 @@
     "name": "Number Forge",
     "slug": "number-forge",
     "version": "1.0.0",
-    "orientation": "portrait",
+    "orientation": "default",
     "icon": "./assets/images/icon.png",
     "scheme": "numberforge",
     "userInterfaceStyle": "light",
@@ -12,7 +12,12 @@
       "supportsTablet": true,
       "bundleIdentifier": "com.numberforge.app",
       "infoPlist": {
-        "ITSAppUsesNonExemptEncryption": false
+        "ITSAppUsesNonExemptEncryption": false,
+        "UISupportedInterfaceOrientations": [
+          "UIInterfaceOrientationPortrait",
+          "UIInterfaceOrientationLandscapeLeft",
+          "UIInterfaceOrientationLandscapeRight"
+        ]
       }
     },
     "android": {

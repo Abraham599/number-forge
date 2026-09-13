@@ -5,6 +5,7 @@ import Animated, { useReducedMotion } from "react-native-reanimated";
 import { FeedbackSheet } from "@/components/FeedbackSheet";
 import { KidButton } from "@/components/KidButton";
 import { LessonChrome } from "@/components/LessonChrome";
+import { PlayStage } from "@/components/PlayStage";
 import { OnesTenFrame } from "@/components/OnesTenFrame";
 import { PaperScreen } from "@/components/PaperScreen";
 import { DigitSmith } from "@/components/DigitSmith";
@@ -44,6 +45,7 @@ import {
   type ForgeBoard,
 } from "@/game/forge/engine";
 import { kidHaptic } from "@/lib/haptics";
+import { useAppLayout } from "@/theme/layout";
 import { colors, hit, radius, shadow, spacing, squircle, type } from "@/theme/tokens";
 
 type Sheet = "correct" | "incorrect" | "quit" | null;
@@ -230,18 +232,19 @@ export default function ForgeScreen() {
 
   if (!lesson || !beat) {
     return (
-      <PaperScreen>
+      <PaperScreen includeBottom>
         <Text style={styles.missing}>That lesson is not in Tens Town yet.</Text>
       </PaperScreen>
     );
   }
 
+  const { split } = useAppLayout();
   const tradeCopy = tradeDetail(lastTrade);
   const formula =
     lastTrade === "break" ? "1 ten → 10 ones" : lastTrade === "make" || lastTrade === "auto" ? "10 ones → 1 ten" : undefined;
 
   return (
-    <PaperScreen style={styles.wrap}>
+    <PaperScreen style={styles.wrap} includeBottom>
       <LessonChrome
         progress={progress}
         prompt={beat.prompt}
@@ -257,22 +260,36 @@ export default function ForgeScreen() {
         unlocked={smith.unlocked}
         tempered={smith.tempered}
       />
-      <View style={styles.mat}>
-        <View style={styles.meterHead}>
-          <Text style={styles.matHint}>{hintForCoach(coach.kind)}</Text>
-          <Text style={styles.place}>{placeLine(hundreds, tens, ones, allowed.includes(100))}</Text>
+      <PlayStage
+        stage={
+      <View style={[styles.mat, split ? styles.matSplit : null]}>
+        <View style={styles.meterBlock}>
+          <View style={styles.meterHead}>
+            <Text style={styles.matHint}>{hintForCoach(coach.kind)}</Text>
+            <Text style={styles.place}>{placeLine(hundreds, tens, ones, allowed.includes(100))}</Text>
+          </View>
+          {split ? (
+            <Text
+              style={[styles.liveSplit, hitTarget ? styles.liveHot : null]}
+              accessibilityLiveRegion="polite"
+            >
+              {total} of {target}
+            </Text>
+          ) : (
+            <>
+              <Text
+                style={[styles.live, hitTarget ? styles.liveHot : null]}
+                accessibilityLiveRegion="polite"
+              >
+                {total}
+              </Text>
+              <View style={styles.meter}>
+                <View style={[styles.meterFill, { width: `${Math.round(fill * 100)}%` }]} />
+              </View>
+              <Text style={styles.goal}>{total} of {target}</Text>
+            </>
+          )}
         </View>
-        <Text
-          style={[styles.live, hitTarget ? styles.liveHot : null]}
-          accessibilityLiveRegion="polite"
-        >
-          {total}
-        </Text>
-        <View style={styles.meter}>
-          <View style={[styles.meterFill, { width: `${Math.round(fill * 100)}%` }]} />
-        </View>
-        <Text style={styles.goal}>{total} of {target}</Text>
-        <View style={styles.chartSpacer} />
         <View style={styles.chart}>
           {allowed.includes(100) || hundreds > 0 ? (
             <Pressable
@@ -331,6 +348,9 @@ export default function ForgeScreen() {
           />
         </View>
       </View>
+        }
+        dock={
+          <>
       <TradeCoach tip={coach} onAskHint={() => setAsked(true)} />
       <View style={styles.tray}>
         {tray.map((value) => (
@@ -371,6 +391,9 @@ export default function ForgeScreen() {
         tone={board.tiles.length === 0 ? "disabled" : "primary"}
         onPress={onCheck}
         style={styles.check}
+      />
+          </>
+        }
       />
 
       {sheet === "correct" ? (
@@ -495,6 +518,7 @@ function hintForCoach(kind: CoachKind): string {
 
 const styles = StyleSheet.create({
   wrap: {
+    flex: 1,
     paddingTop: spacing.sm,
     paddingBottom: spacing.md,
     gap: spacing.sm,
@@ -507,14 +531,29 @@ const styles = StyleSheet.create({
   mat: {
     flex: 1,
     minHeight: 0,
-    overflow: "hidden",
     borderRadius: radius.lg,
     paddingHorizontal: spacing.md,
     paddingTop: spacing.lg,
     paddingBottom: spacing.md,
     backgroundColor: colors.white,
+    justifyContent: "space-between",
     ...shadow.card,
     ...squircle,
+  },
+  meterBlock: {
+    flexShrink: 1,
+    minHeight: 0,
+  },
+  matSplit: {
+    paddingTop: spacing.sm,
+    paddingBottom: spacing.sm,
+  },
+  liveSplit: {
+    ...type.headline,
+    color: colors.ink,
+    textAlign: "center",
+    marginTop: spacing.xs,
+    marginBottom: spacing.sm,
   },
   meterHead: {
     flexDirection: "row",
@@ -559,19 +598,17 @@ const styles = StyleSheet.create({
     marginTop: spacing.xs,
     marginBottom: spacing.sm,
   },
-  chartSpacer: {
-    flex: 1,
-    minHeight: 8,
-  },
   chart: {
     flexDirection: "row",
     alignItems: "stretch",
     gap: spacing.sm,
+    flexGrow: 0,
     flexShrink: 0,
+    minHeight: 108,
   },
   tensCard: {
     width: 88,
-    minHeight: 94,
+    minHeight: 108,
     borderRadius: radius.md,
     padding: spacing.sm,
     backgroundColor: colors.paper,
@@ -614,6 +651,7 @@ const styles = StyleSheet.create({
   },
   tray: {
     flexDirection: "row",
+    flexWrap: "wrap",
     alignItems: "center",
     justifyContent: "center",
     gap: spacing.sm,

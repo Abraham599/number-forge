@@ -2,6 +2,7 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useMemo, useRef } from "react";
 import { StyleSheet, Text, View } from "react-native";
 import { DigitSmith } from "@/components/DigitSmith";
+import { DuoPane } from "@/components/DuoPane";
 import { KidButton } from "@/components/KidButton";
 import { PaperScreen } from "@/components/PaperScreen";
 import { Surface } from "@/components/Surface";
@@ -116,51 +117,61 @@ export default function CompleteScreen() {
   };
 
   return (
-    <PaperScreen style={styles.wrap}>
-      <DigitSmith
-        size={140}
-        mood="glad"
-        unlocked={snap.unlocked}
-        highlight={newPartId}
-        tempered={snap.tempered || newlyTempered}
-      />
-      <Text style={styles.title}>{title}</Text>
-      {forgedPart ? (
-        <Text style={styles.detail}>{forgedPart.blurb}</Text>
-      ) : part ? (
-        <Text style={styles.detail}>
-          {stars < 3
-            ? `${stars} of 3 stars. Get every check to forge the ${part.name}.`
-            : `${part.name} sits tighter on Smith.`}
-        </Text>
-      ) : isMixLesson(lessonId) ? (
-        <Text style={styles.detail}>
-          {newlyTempered ? "Rewind tempered Smith's tools." : "Same forge. Fresh numbers."}
-        </Text>
-      ) : null}
-      <Text style={styles.stars}>{"★".repeat(stars)}</Text>
-      <View style={styles.row}>
-        <Stat label="Stars" value={String(stars)} />
-        <Stat label="XP" value={`+${xp}`} />
-      </View>
-      <KidButton
-        label={
-          stillThis
-            ? "Try again"
-            : pathDone
-              ? "See Smith"
-              : snap.nextPart
-                ? `Forge the ${snap.nextPart.name}`
-                : current
-                  ? `Play ${current.label}`
-                  : "See Smith"
+    <PaperScreen style={styles.wrap} includeBottom>
+      <DuoPane
+        primary={
+          <View style={styles.hero}>
+            <DigitSmith
+              size={140}
+              mood="glad"
+              unlocked={snap.unlocked}
+              highlight={newPartId}
+              tempered={snap.tempered || newlyTempered}
+            />
+          </View>
         }
-        onPress={keepGoing}
-      />
-      <KidButton
-        label="See Smith"
-        tone="ghost"
-        onPress={() => router.replace("/(tabs)/smith")}
+        secondary={
+          <View style={styles.copy}>
+            <Text style={styles.title}>{title}</Text>
+            {forgedPart ? (
+              <Text style={styles.detail}>{forgedPart.blurb}</Text>
+            ) : part ? (
+              <Text style={styles.detail}>
+                {stars < 3
+                  ? `${stars} of 3 stars. Get every check to forge the ${part.name}.`
+                  : `${part.name} sits tighter on Smith.`}
+              </Text>
+            ) : isMixLesson(lessonId) ? (
+              <Text style={styles.detail}>
+                {newlyTempered ? "Rewind tempered Smith's tools." : "Same forge. Fresh numbers."}
+              </Text>
+            ) : null}
+            <Text style={styles.stars}>{"★".repeat(stars)}</Text>
+            <View style={styles.row}>
+              <Stat label="Stars" value={String(stars)} />
+              <Stat label="XP" value={`+${xp}`} />
+            </View>
+            <KidButton
+              label={
+                stillThis
+                  ? "Try again"
+                  : pathDone
+                    ? "See Smith"
+                    : snap.nextPart
+                      ? `Forge the ${snap.nextPart.name}`
+                      : current
+                        ? `Play ${current.label}`
+                        : "See Smith"
+              }
+              onPress={keepGoing}
+            />
+            <KidButton
+              label="See Smith"
+              tone="ghost"
+              onPress={() => router.replace("/(tabs)/smith")}
+            />
+          </View>
+        }
       />
     </PaperScreen>
   );
@@ -183,10 +194,19 @@ function Stat({ label, value }: { label: string; value: string }) {
 
 const styles = StyleSheet.create({
   wrap: {
+    justifyContent: "center",
+    paddingBottom: spacing.huge,
+  },
+  hero: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  copy: {
+    flex: 1,
     alignItems: "center",
     justifyContent: "center",
     gap: spacing.md,
-    paddingBottom: spacing.huge,
   },
   title: {
     ...type.title,

@@ -7,18 +7,20 @@ import { Surface } from "@/components/Surface";
 import { GRADE_BANDS } from "@/curriculum/tens-town";
 import type { GradeBand } from "@/curriculum/types";
 import { useAppState } from "@/progress/store";
+import { useAppLayout } from "@/theme/layout";
 import { colors, spacing, type } from "@/theme/tokens";
 
 export default function OnboardingScreen() {
   const router = useRouter();
   const completeOnboarding = useAppState((state) => state.completeOnboarding);
   const [band, setBand] = useState<GradeBand>("g23");
+  const { split } = useAppLayout();
 
   return (
-    <PaperScreen style={styles.wrap}>
+    <PaperScreen style={styles.wrap} includeBottom>
       <Text style={styles.title}>Where do you start?</Text>
       <Text style={styles.sub}>Same town. You will build, compare, bunch, and share numbers.</Text>
-      <View style={styles.cards}>
+      <View style={[styles.cards, split ? styles.cardsRow : null]}>
         {GRADE_BANDS.map((item) => {
           const selected = item.id === band;
           return (
@@ -28,9 +30,10 @@ export default function OnboardingScreen() {
               accessibilityRole="button"
               accessibilityState={{ selected }}
               accessibilityLabel={`${item.title}. ${item.blurb}`}
+              style={split ? styles.cardHit : undefined}
             >
               <Surface
-                style={selected ? styles.cardOn : null}
+                style={[styles.cardShell, selected ? styles.cardOn : null]}
                 contentStyle={styles.card}
               >
                 <Text style={styles.cardTitle}>{item.title}</Text>
@@ -70,6 +73,16 @@ const styles = StyleSheet.create({
   cards: {
     flex: 1,
     gap: spacing.md,
+  },
+  cardsRow: {
+    flexDirection: "row",
+    alignItems: "stretch",
+  },
+  cardHit: {
+    flex: 1,
+  },
+  cardShell: {
+    flex: 1,
   },
   card: {
     padding: spacing.xl,

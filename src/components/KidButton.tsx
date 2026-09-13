@@ -68,11 +68,14 @@ function toneStyles(tone: Tone): { bg: string; fg: string } {
 const styles = StyleSheet.create({
   base: {
     minHeight: hit.kid,
+    minWidth: hit.kid,
     borderRadius: radius.lg,
     alignItems: "center",
     justifyContent: "center",
     paddingHorizontal: spacing.xxl,
+    alignSelf: "center",
     width: "100%",
+    maxWidth: 360,
   },
   label: {
     ...type.headline,

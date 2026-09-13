@@ -1,9 +1,7 @@
 import { Platform, type TextStyle, type ViewStyle } from "react-native";
 
-/** iPhone 14/15/16 Plus logical canvas. Screens flex; content never grows past this. */
+/** Layout margins. Screens fill the safe area — no fixed phone canvas. */
 export const canvas = {
-  width: 430,
-  height: 932,
   inset: 20,
 } as const;
 

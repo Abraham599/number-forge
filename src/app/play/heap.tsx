@@ -6,6 +6,7 @@ import { FeedbackSheet } from "@/components/FeedbackSheet";
 import { KidButton } from "@/components/KidButton";
 import { LessonChrome } from "@/components/LessonChrome";
 import { PaperScreen } from "@/components/PaperScreen";
+import { PlayStage } from "@/components/PlayStage";
 import { TradeCoach } from "@/components/TradeCoach";
 import { generateHeapLesson } from "@/curriculum/generate";
 import { heapLessonById } from "@/curriculum/tens-town";
@@ -17,6 +18,7 @@ import { usePlayMusic } from "@/lib/use-play-music";
 import { isSmithTempered, listSkills, masteredLessonIds } from "@/progress/db";
 import { useAppState } from "@/progress/store";
 import { partForPlayId, smithSnapshot } from "@/smith/parts";
+import { useAppLayout } from "@/theme/layout";
 import { colors, radius, shadow, spacing, squircle, type } from "@/theme/tokens";
 
 type Sheet = "correct" | "incorrect" | "quit" | null;
@@ -120,7 +122,7 @@ export default function HeapScreen() {
 
   if (!lesson || !beat) {
     return (
-      <PaperScreen>
+      <PaperScreen includeBottom>
         <Text style={styles.missing}>That lesson is not in Tens Town yet.</Text>
       </PaperScreen>
     );
@@ -128,9 +130,10 @@ export default function HeapScreen() {
 
   const dots = showsHeapDots(beat.left, beat.right);
   const max = Math.max(beat.left, beat.right, 1);
+  const { split, foldGutter } = useAppLayout();
 
   return (
-    <PaperScreen style={styles.wrap}>
+    <PaperScreen style={styles.wrap} includeBottom>
       <LessonChrome
         progress={(beatIndex + 0.15) / lesson.beats.length}
         prompt={beat.prompt}
@@ -139,8 +142,10 @@ export default function HeapScreen() {
         unlocked={smith.unlocked}
         tempered={smith.tempered}
       />
+      <PlayStage
+        stage={
       <View style={styles.mat}>
-        <View style={styles.piles}>
+        <View style={[styles.piles, { gap: split ? foldGutter : spacing.sm }]}>
           <HeapPile
             label="This pile"
             value={beat.left}
@@ -168,8 +173,14 @@ export default function HeapScreen() {
           <Text style={[styles.sameText, pick === "same" ? styles.sameTextOn : null]}>Same</Text>
         </Pressable>
       </View>
+        }
+        dock={
+          <>
       <TradeCoach tip={coach} onAskHint={() => setAsked(true)} />
       <KidButton label="Check" tone={pick == null ? "disabled" : "primary"} onPress={onCheck} />
+          </>
+        }
+      />
       {sheet === "correct" ? (
         <FeedbackSheet
           variant="correct"
@@ -242,6 +253,7 @@ function HeapPile({
 
 const styles = StyleSheet.create({
   wrap: {
+    flex: 1,
     paddingTop: spacing.sm,
     paddingBottom: spacing.md,
     gap: spacing.sm,

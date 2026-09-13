@@ -2,6 +2,7 @@ import React from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { DigitSmith } from "@/components/DigitSmith";
 import type { SmithPartId } from "@/smith/parts";
+import { useAppLayout } from "@/theme/layout";
 import { colors, hit, spacing, type } from "@/theme/tokens";
 
 type Props = {
@@ -23,39 +24,75 @@ export function LessonChrome({
   unlocked = [],
   tempered = false,
 }: Props) {
+  const { sideChrome } = useAppLayout();
+  const close = (
+    <Pressable
+      onPress={onQuit}
+      accessibilityRole="button"
+      accessibilityLabel="Close lesson"
+      style={styles.close}
+    >
+      <Text style={styles.closeText}>✕</Text>
+    </Pressable>
+  );
+  const track = (
+    <View style={styles.track}>
+      <View style={[styles.fill, { width: `${Math.round(progress * 100)}%` }]} />
+    </View>
+  );
+  const promptRow = (
+    <View style={styles.promptRow}>
+      <DigitSmith size={56} compact unlocked={unlocked} tempered={tempered} />
+      <View style={styles.promptCopy}>
+        <Text style={styles.prompt} numberOfLines={2}>
+          {prompt}
+        </Text>
+        {bait || partName ? (
+          <Text style={styles.bait} numberOfLines={1}>
+            {bait ?? `Earn 3 stars to forge the ${partName}`}
+          </Text>
+        ) : null}
+      </View>
+    </View>
+  );
+
+  if (sideChrome) {
+    return (
+      <View style={styles.wide}>
+        <View style={styles.sideNav}>{close}</View>
+        <View style={styles.wideMain}>
+          <View style={styles.trackWide}>{track}</View>
+          {promptRow}
+        </View>
+      </View>
+    );
+  }
+
   return (
     <View>
       <View style={styles.top}>
-        <Pressable
-          onPress={onQuit}
-          accessibilityRole="button"
-          accessibilityLabel="Close lesson"
-          style={styles.close}
-        >
-          <Text style={styles.closeText}>✕</Text>
-        </Pressable>
-        <View style={styles.track}>
-          <View style={[styles.fill, { width: `${Math.round(progress * 100)}%` }]} />
-        </View>
+        {close}
+        {track}
       </View>
-      <View style={styles.promptRow}>
-        <DigitSmith size={56} compact unlocked={unlocked} tempered={tempered} />
-        <View style={styles.promptCopy}>
-          <Text style={styles.prompt} numberOfLines={2}>
-            {prompt}
-          </Text>
-          {bait || partName ? (
-            <Text style={styles.bait} numberOfLines={1}>
-              {bait ?? `Earn 3 stars to forge the ${partName}`}
-            </Text>
-          ) : null}
-        </View>
-      </View>
+      {promptRow}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
+  wide: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    gap: spacing.sm,
+  },
+  sideNav: {
+    width: hit.kid - 8,
+    alignItems: "center",
+  },
+  wideMain: {
+    flex: 1,
+    minWidth: 0,
+  },
   top: {
     flexDirection: "row",
     alignItems: "center",
@@ -71,6 +108,11 @@ const styles = StyleSheet.create({
   closeText: {
     ...type.subtitle,
     color: colors.inkSoft,
+  },
+  trackWide: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: spacing.sm,
   },
   track: {
     flex: 1,
